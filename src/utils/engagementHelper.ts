@@ -3,6 +3,8 @@ import sampleMessageCountList from "../messageCountList"
 import sampleChannels from "../channels"
 import messageCountList from "../messageCountList";
 
+let hoverLineValue: number | null = null;
+
 // Helper function to generate parabolic data points
 function generateSeriesData(channel: typeof sampleMessageCountList) {
     return channel.map((item) => {
@@ -33,7 +35,6 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
     const options: Highcharts.Options = {
         chart: {
             backgroundColor: "#22222c",
-            // alignTicks: false
         },
         title: {
             text: "Engagement Over Time"
@@ -80,7 +81,7 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
                 return `
                 <table>
                 <tr><td style="color: white; font-size: 12px; font-weight: bold">${this.point.series.name}</td></tr>
-                <tr><td style="font-size: 12px; color: #69696a">${this.y} ${ this.y && typeof this.y === "number" && this.y > 1 ? 'messages' : 'message'} on ${formattedDate}</td></tr>
+                <tr><td style="font-size: 12px; color: #69696a">${this.y} ${this.y && typeof this.y === "number" && this.y > 1 ? 'messages' : 'message'} on ${formattedDate}</td></tr>
                 </table>`;
             },
         },
@@ -94,21 +95,31 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
         options.series?.push({
             name: channelData ? channelData.name : channel[0].channelId,
             data: seriesData,
-            type: "line",
+            type: "spline",
             color: "#0b7475",
-            // events: {
-            //     mouseOver: function () {
-            //         const chart = this.chart;
-            //         const hoverLine = chart.get("hoverLine");
-            //         if (hoverLine) {
-            //             hoverLine.options.value = this.x;
-            //             hoverLine.render();
-            //         }
-            //     },
-            //     mouseOut: function () {
-            //         const chart = this.chart;
-            //     },
-            // },
+            point: {
+                events: {
+                    mouseOver: function () {
+                        const chart = this.series.chart;
+                        const pointX = this.x;
+                        hoverLineValue = pointX;
+                        chart.xAxis[0].removePlotLine("hoverLine");
+                        if (!isNaN(hoverLineValue)) { // Check for valid hoverLineValue
+                            chart.xAxis[0].addPlotLine({
+                                color: "gray",
+                                width: 1,
+                                id: "hoverLine",
+                                value: hoverLineValue,  // Specify the x-coordinate where the line should appear
+                            });
+                        }
+                    },
+                    mouseOut: function () {
+                        const chart = this.series.chart;
+                        hoverLineValue = null;
+                        chart.xAxis[0].removePlotLine("hoverLine");
+                    },
+                },
+            },
         });
     });
 

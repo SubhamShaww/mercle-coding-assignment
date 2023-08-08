@@ -72,13 +72,6 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
             lineColor: "#434a50",
             gridLineWidth: 0,
         },
-        plotOptions: {
-            line: {
-                marker: {
-                    enabled: false
-                }
-            }
-        },
         legend: {
             backgroundColor: "#15161b",
             itemStyle: {
@@ -91,6 +84,9 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
         },
         tooltip: {
             backgroundColor: "#0c0c0f",
+            style: {
+                opacity: 0.8
+            },
             borderColor: "#0b7475",
             borderWidth: 1,
             padding: 4,
@@ -118,6 +114,10 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
             data: seriesData,
             type: "spline",
             color: "#0b7475",
+            marker: {
+                enabled: false,
+                lineColor: "#0b7475",
+            },
             point: {
                 events: {
                     mouseOver: handleMouseOver,

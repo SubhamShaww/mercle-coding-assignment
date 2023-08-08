@@ -3,8 +3,6 @@ import sampleMessageCountList from "../messageCountList"
 import sampleChannels from "../channels"
 import messageCountList from "../messageCountList";
 
-let hoverLineValue: number | null = null;
-
 // Helper function to generate parabolic data points
 function generateSeriesData(channel: typeof sampleMessageCountList) {
     return channel.map((item) => {
@@ -28,6 +26,29 @@ function filterChannelsWithMultipleDates(messageCountList: typeof sampleMessageC
 
     // Filter channels that have messages for more than 1 date
     return Object.values(groupedByChannel).filter((channel) => channel.length > 1);
+}
+
+function handleMouseOver(this: Highcharts.Point): void {
+    const chart = this.series.chart;
+    const pointX = this.x; // Get x-coordinate of the hovered point
+    updateHoverLine(chart, pointX);
+}
+
+function handleMouseOut(this: Highcharts.Point): void {
+    const chart = this.series.chart;
+    updateHoverLine(chart, null);
+}
+
+function updateHoverLine(chart: Highcharts.Chart, hoverLineValue: number | null): void {
+    chart.xAxis[0].removePlotLine("hoverLine");
+    if (typeof hoverLineValue === "number") { // Check for valid hoverLineValue
+        chart.xAxis[0].addPlotLine({
+            color: "gray",
+            width: 1,
+            id: "hoverLine",
+            value: hoverLineValue,  // Specify the x-coordinate where the line should appear
+        });
+    }
 }
 
 // Generate HighchartReact options based on the filtered channels and channels data
@@ -99,25 +120,8 @@ function generateChartOptions(filteredChannels: typeof messageCountList[], chann
             color: "#0b7475",
             point: {
                 events: {
-                    mouseOver: function () {
-                        const chart = this.series.chart;
-                        const pointX = this.x;
-                        hoverLineValue = pointX;
-                        chart.xAxis[0].removePlotLine("hoverLine");
-                        if (!isNaN(hoverLineValue)) { // Check for valid hoverLineValue
-                            chart.xAxis[0].addPlotLine({
-                                color: "gray",
-                                width: 1,
-                                id: "hoverLine",
-                                value: hoverLineValue,  // Specify the x-coordinate where the line should appear
-                            });
-                        }
-                    },
-                    mouseOut: function () {
-                        const chart = this.series.chart;
-                        hoverLineValue = null;
-                        chart.xAxis[0].removePlotLine("hoverLine");
-                    },
+                    mouseOver: handleMouseOver,
+                    mouseOut: handleMouseOut,
                 },
             },
         });
